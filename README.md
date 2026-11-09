@@ -12,7 +12,8 @@ A Streamlit app to keep the MPA applicant tracking spreadsheet in sync with the 
 - Shows a preview of all status changes and new applicants before download
 - Excludes `37POSCPMA` (non-MPA) records automatically
 - Fixes only `prog_actn` on existing records — your hand-entered notes are untouched
-- Output filename includes today's date (e.g. `Fall 2026 MPA Applicants Unified 06112026.xlsx`)
+- New applicants come in with `status`, `pre-req`, `pdf`, and `mail` blank
+- Output filename keeps the uploaded workbook's title and stamps today's date (upload `Spring 2027 MPA Applicants Unified 11042026.xlsx`, get `Spring 2027 MPA Applicants Unified <today>.xlsx`)
 - Runs locally on Mac or Windows
 
 ---

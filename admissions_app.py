@@ -1,9 +1,15 @@
+import re
 import streamlit as st
 import pandas as pd
 from io import BytesIO
 from datetime import date
 
 EXCLUDED_PLAN = "37POSCPMA"
+
+# The only workbook columns the university report fills in. The workbook's
+# status, pre-req, pdf, and mail are kept by hand. The report's own `Status`
+# column (AP, CN) shares a name with the hand column but means something else.
+REPORT_COLS = ["id", "prog_actn", "last", "first_name", "fullerton_email", "home_email"]
 
 st.set_page_config(page_title="Admissions Excel File Updater")
 st.title("Admissions Excel File Updater")
@@ -70,9 +76,9 @@ if not changed.empty:
     for _, row in changed.iterrows():
         df_result.loc[df_result["id"] == row["id"], "prog_actn"] = row["new"]
 
-# Append new applicants — only keep columns already in the Excel
+# Append new applicants — report columns only; hand columns start blank
 if not new_ids.empty:
-    cols_to_add = [c for c in df_excel.columns if c in new_ids.columns]
+    cols_to_add = [c for c in REPORT_COLS if c in df_excel.columns and c in new_ids.columns]
     df_result = pd.concat([df_result, new_ids[cols_to_add]], ignore_index=True)
 
 # --- Summary ---
@@ -92,8 +98,12 @@ if not new_ids.empty:
     st.dataframe(new_ids[display_cols].reset_index(drop=True), use_container_width=True)
 
 # --- Download ---
+# Output name follows the uploaded workbook: same title, today's date. The
+# title carries the term, so a new cycle needs no change here. Also drops a
+# browser's " (1)" after the old date.
 today = date.today().strftime("%m%d%Y")
-output_name = f"Fall 2026 MPA Applicants Unified {today}.xlsx"
+title = re.sub(r"\s*\d{8}.*$", "", re.sub(r"\.xlsx$", "", excel_file.name, flags=re.I))
+output_name = f"{title} {today}.xlsx"
 
 output = BytesIO()
 df_result.to_excel(output, index=False, engine="openpyxl")
